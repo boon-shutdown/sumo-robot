@@ -1,0 +1,92 @@
+#include "CytronMakerSumo.h"
+
+const int chA=A2;  //GPIO 01
+const int chB=A3;  //GPIO 02
+
+int ch1;  //Variables to store and display the values of each channel
+int ch2;  //Variables to store and display the values of each channel
+
+int ch1Min = 866; // read from serial monitor
+int ch1Max = 2068; // read from serial monitor
+int ch2Min = 2138; // read from serial monitor
+int ch2Max = 978; // read from serial monitor
+
+int offset = 45;  // Offset value for STOP function, get value from Serial Monitor
+int val;
+
+void setup() {
+  // put your setup code here, to run once:
+  MakerSumo.begin();
+  Serial.begin(9600);
+
+  // Set input pins
+  pinMode(chA, INPUT);
+  pinMode(chB, INPUT);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  // read the input channels
+  ch1 = pulseIn (chA,HIGH);  //Read and store channel 1
+  Serial.print ("Ch1:");  //Display text string on Serial Monitor to distinguish variables
+  Serial.print (ch1);     //Print in the value of channel 1
+  Serial.print ("|");
+
+  ch2 = pulseIn (chB,HIGH);
+  Serial.print ("Ch2:");
+  Serial.print (ch2);
+  Serial.print ("|");
+
+  //LEFT & RIGHT
+  int SpeedCh1 = map(ch1,ch1Min,ch1Max,-255,255);
+  Serial.print (SpeedCh1);
+  Serial.print ("|");
+
+  //FORWARD & BACKWARD
+  int SpeedCh2 = map(ch2,ch2Min,ch2Max,-255,255);
+  Serial.print (SpeedCh2);
+  Serial.println ("|");
+
+  if (SpeedCh2 > offset && SpeedCh2 <= 255)
+  {
+    Serial.print("FORWARD");
+    Serial.print ("|");
+    MakerSumo.setMotorSpeed(MOTOR_L, SpeedCh2);  // Left motor forward
+    MakerSumo.setMotorSpeed(MOTOR_R, SpeedCh2);  // Right motor forward
+  }
+
+    else if (SpeedCh2 < -offset && SpeedCh2 >= -255)
+  {
+    Serial.print("BACKWARD");
+    Serial.print ("|");
+    MakerSumo.setMotorSpeed(MOTOR_L, SpeedCh2);  // Left motor backward
+    MakerSumo.setMotorSpeed(MOTOR_R, SpeedCh2);  // Right motor backward
+  }
+
+  else if (SpeedCh1 > offset && SpeedCh1 <= 255)
+  {
+    Serial.print("Turn RIGHT");
+    Serial.print ("|");
+    MakerSumo.setMotorSpeed(MOTOR_L, SpeedCh1);  // Left motor forward
+    MakerSumo.setMotorSpeed(MOTOR_R, -SpeedCh1);  // Right motor backward
+  }
+
+  else if (SpeedCh1 < -offset && SpeedCh1 >= -255)
+  {
+    Serial.print("Turn LEFT");
+    Serial.print ("|");
+    MakerSumo.setMotorSpeed(MOTOR_L, SpeedCh1);  // Left motor backward
+    MakerSumo.setMotorSpeed(MOTOR_R, -SpeedCh1);  // Right motor forward
+  }
+
+
+  else if (SpeedCh1 <= offset && SpeedCh1 >= -offset)
+  {
+    Serial.print("STOP");
+    Serial.print ("|");
+    MakerSumo.setMotorSpeed(MOTOR_L, 0);  // Left motor stop
+    MakerSumo.setMotorSpeed(MOTOR_R, 0);  // Right motor stop
+  }
+
+   delay(100);
+ }
